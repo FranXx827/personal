@@ -1,0 +1,192 @@
+# =====================================================================
+# 根级 .gitignore
+# 覆盖 monorepo 三个子模块的常见忽略项
+# 子模块各自还有更具体的 .gitignore (frontend/.gitignore 等)
+# =====================================================================
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# Windows
+[Bb]ackup[Uu]p/
+*.lnk
+*.url
+
+# Linux/macOS
+*.swp
+*.swo
+*~
+
+# ===========================================================================
+# Java (backend/)
+# ===========================================================================
+backend/target/
+backend/*.class
+backend/*.jar
+backend/*.war
+backend/*.ear
+backend/hs_err_pid*
+backend/replay_pid*
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/MANIFEST.MF
+
+# Spring Boot
+backend/application-local.yml
+backend/application-local.yaml
+backend/.springBeans
+
+# ===========================================================================
+# Node (frontend/)
+# ===========================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.nuxt/
+frontend/.next/
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.vite/
+frontend/.eslintcache
+frontend/.stylelintcache
+frontend/coverage/
+frontend/.nyc_output/
+frontend/lib-cov/
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/.npm
+frontend/.yarn
+frontend/.pnp.*
+frontend/pnpm-lock.yaml
+
+# ===========================================================================
+# Python (ai-assistant/)
+# ===========================================================================
+ai-assistant/__pycache__/
+ai-assistant/**/__pycache__/
+ai-assistant/**/**/__pycache__/
+ai-assistant/*.py[cod]
+ai-assistant/*$py.class
+ai-assistant/*.so
+ai-assistant/.Python
+ai-assistant/build/
+ai-assistant/dist/
+ai-assistant/downloads/
+ai-assistant/eggs/
+ai-assistant/.eggs/
+ai-assistant/lib/
+ai-assistant/lib64/
+ai-assistant/parts/
+ai-assistant/sdist/
+ai-assistant/var/
+ai-assistant/wheels/
+ai-assistant/share/python-wheels/
+ai-assistant/*.egg-info/
+ai-assistant/.installed.cfg
+ai-assistant/*.egg
+ai-assistant/.venv/
+ai-assistant/venv/
+ai-assistant/env/
+ai-assistant/ENV/
+ai-assistant/.mypy_cache/
+ai-assistant/.pytest_cache/
+ai-assistant/.ruff_cache/
+ai-assistant/htmlcov/
+ai-assistant/.tox/
+ai-assistant.coverage
+ai-assistant.coverage.*
+ai-assistant.cache
+ai-assistant/.nosetests.xml
+ai-assistant/cover/
+ai-assistant/.hypothesis/
+ai-assistant.langgraph_data/
+ai-assistant.checkpoints.db*
+
+# ===========================================================================
+# IDE
+# ===========================================================================
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+nbproject/
+nbbuild/
+nbdist/
+
+# ===========================================================================
+# 敏感信息
+# ===========================================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ===========================================================================
+# 日志 & 临时文件
+# ===========================================================================
+logs/
+*.log
+tmp/
+temp/
+.tmp/
+.cache/
+*.tmp
+*.bak
+*.swp
+*.orig
+.idea/workspace.xml
+
+# ===========================================================================
+# 文档构建产物
+# ===========================================================================
+docs/_site/
+docs/_build/
+site/
+
+# ===========================================================================
+# 覆盖率报告
+# ===========================================================================
+coverage/
+*.lcov
+.nyc_output/
+.coverage
+
+# ===========================================================================
+# 依赖管理
+# ===========================================================================
+node_modules/
+jspm_packages/
+bower_components/
+
+# ===========================================================================
+# 构建产物
+# ===========================================================================
+out/
+build/
+target/
+bin/
+obj/
+
+# ===========================================================================
+# 本地工具状态 (WorkBuddy 等)
+# ===========================================================================
+.workbuddy/
