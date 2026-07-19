@@ -22,7 +22,7 @@ class OrderQueryTool(BaseTool):
     async def _run(self, user_id: int, order_no: str | None = None) -> dict:
         async with httpx.AsyncClient(timeout=settings.backend_timeout) as client:
             url = (
-                f"{settings.backend_base_url}/orders/{order_no}"
+                f"{settings.backend_base_url}/orders/no/{order_no}"
                 if order_no
                 else f"{settings.backend_base_url}/orders"
             )

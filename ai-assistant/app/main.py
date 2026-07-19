@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.middleware.error import register_error_handlers
 from app.middleware.trace import TraceIdMiddleware
+from app.tools.registry import bootstrap_tools
 
 logger = structlog.get_logger(__name__)
 
@@ -21,6 +22,10 @@ logger = structlog.get_logger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging(settings.log_level)
+
+    # 注册内置工具（必须在服务启动前完成）
+    bootstrap_tools()
+
     logger.info(
         "ai-assistant starting",
         env=settings.app_env,

@@ -10,6 +10,8 @@ public interface OrderService {
 
     OrderVO getOrderDetail(Long orderId, Long userId);
 
+    OrderVO getOrderByOrderNo(String orderNo, Long userId);
+
     void cancelOrder(Long orderId, Long userId);
 
     void payOrder(Long orderId, Long userId);

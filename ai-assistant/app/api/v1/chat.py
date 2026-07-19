@@ -8,7 +8,7 @@ from typing import Any
 
 import structlog
 from fastapi import APIRouter, HTTPException
-from langchain_core.messages import AIMessageChunk, HumanMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, SystemMessage
 from sse_starlette.sse import EventSourceResponse
 
 from app.agents.graph import get_compiled_graph
@@ -29,8 +29,22 @@ async def chat_stream(req: ChatRequest) -> EventSourceResponse:
     async def event_generator():
         try:
             graph = get_compiled_graph()
+
+            # 构建消息历史：将前端传来的 history 转换为 LangChain Message，但跳过 tool 类型
+            history_messages: list = []
+            if req.history:
+                role_map = {
+                    "user": HumanMessage,
+                    "assistant": AIMessage,
+                    "system": SystemMessage,
+                }
+                for h in req.history:
+                    cls = role_map.get(h.role)
+                    if cls and h.content:
+                        history_messages.append(cls(content=h.content))
+
             state_in = {
-                "messages": [HumanMessage(content=req.message)],
+                "messages": [*history_messages, HumanMessage(content=req.message)],
                 "session_id": session_id,
                 "tool_results": [],
                 "retry_count": 0,
@@ -47,6 +61,14 @@ async def chat_stream(req: ChatRequest) -> EventSourceResponse:
                         chunk = messages[-1]
                         if chunk.content:
                             yield {"event": "message", "data": _sse_chunk("token", chunk.content)}
+                        # 发出 tool_call 事件（前端用于展示工具调用提示）
+                        if hasattr(chunk, "tool_call_chunks") and chunk.tool_call_chunks:
+                            for tcc in chunk.tool_call_chunks:
+                                if tcc.name:
+                                    yield {
+                                        "event": "message",
+                                        "data": _sse_chunk("tool_call", name=tcc.name, args=tcc.args or "{}"),
+                                    }
                     for tr in node_state.get("tool_results", []):
                         yield {"event": "message", "data": _sse_chunk("tool_result", "", **tr)}
 
@@ -60,7 +82,15 @@ async def chat_stream(req: ChatRequest) -> EventSourceResponse:
         finally:
             _cancel_events.pop(session_id, None)
 
-    return EventSourceResponse(event_generator())
+    response = EventSourceResponse(event_generator())
+
+    # 确保客户端断开时清理资源
+    @response.on_disconnect
+    async def _on_disconnect():
+        cancel_event.set()
+        _cancel_events.pop(session_id, None)
+
+    return response
 
 
 @router.post("/chat/stop")

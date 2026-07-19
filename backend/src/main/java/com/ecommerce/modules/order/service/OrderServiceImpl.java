@@ -95,6 +95,25 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderVO getOrderByOrderNo(String orderNo, Long userId) {
+        Order order = orderMapper.selectOne(
+                new LambdaQueryWrapper<Order>().eq(Order::getOrderNo, orderNo)
+        );
+        if (order == null) {
+            throw new ResourceNotFoundException("订单号", orderNo);
+        }
+        if (!order.getUserId().equals(userId)) {
+            throw new BusinessException(403, "无权访问该订单");
+        }
+
+        List<OrderItem> items = orderItemMapper.selectList(
+                new LambdaQueryWrapper<OrderItem>().eq(OrderItem::getOrderId, order.getId())
+        );
+
+        return toOrderVO(order, items);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelOrder(Long orderId, Long userId) {
         Order order = orderMapper.selectById(orderId);

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +24,12 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+
+    @Value("${service.token}")
+    private String serviceToken;
+
+    private static final Long SERVICE_USER_ID = 0L;
+    private static final String SERVICE_USERNAME = "ai-assistant";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -47,6 +54,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
                 UserContextHolder.set(userId, username);
+            }
+        } else {
+            // 无 JWT 时尝试服务间鉴权 (X-Service-Token)
+            String serviceToken = request.getHeader("X-Service-Token");
+            if (StringUtils.hasText(serviceToken) && serviceToken.equals(this.serviceToken)) {
+                UserContextHolder.set(SERVICE_USER_ID, SERVICE_USERNAME);
+                log.debug("Service token auth success: userId={}", SERVICE_USER_ID);
             }
         }
 

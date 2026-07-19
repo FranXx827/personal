@@ -34,6 +34,13 @@ public class OrderController {
         return Result.success(orderService.getOrderDetail(id, userId));
     }
 
+    @Operation(summary = "根据订单号查询（AI 助手使用）")
+    @GetMapping("/no/{orderNo}")
+    public Result<OrderVO> getOrderByOrderNo(@PathVariable String orderNo) {
+        Long userId = UserContextHolder.getUserId();
+        return Result.success(orderService.getOrderByOrderNo(orderNo, userId));
+    }
+
     @Operation(summary = "取消订单")
     @PostMapping("/{id}/cancel")
     public Result<Void> cancelOrder(@PathVariable Long id) {
@@ -53,10 +60,13 @@ public class OrderController {
     @Operation(summary = "查询用户订单列表")
     @GetMapping
     public Result<PageResult<OrderVO>> listUserOrders(
+            @RequestParam(required = false) Long userId,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
-        Long userId = UserContextHolder.getUserId();
-        return Result.success(orderService.listUserOrders(userId, status, page, pageSize));
+        // 优先使用查询参数中的 userId（AI 助手服务调用场景），
+        // 否则从 JWT 上下文中获取（用户直接请求场景）
+        Long targetUserId = userId != null ? userId : UserContextHolder.getUserId();
+        return Result.success(orderService.listUserOrders(targetUserId, status, page, pageSize));
     }
 }

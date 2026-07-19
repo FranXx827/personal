@@ -57,3 +57,7 @@ jwt:
   access-token-expiration: 900000        # 15 min
   refresh-token-secret: dev-refresh-token-secret-key-must-be-at-least-256-bits-long
   refresh-token-expiration: 604800000    # 7 days
+
+# Service-to-Service Token (AI Assistant → Backend)
+service:
+  token: ai-service-shared-secret-key

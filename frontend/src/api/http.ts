@@ -120,7 +120,39 @@ http.interceptors.response.use(
 
 aiHttp.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const original = error.config
+    const userStore = useUserStore()
+
+    if (error.response?.status === 401 && !(original as Record<string, unknown>)._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          pendingQueue.push((token) => {
+            if (token) {
+              original.headers.Authorization = `Bearer ${token}`
+              resolve(aiHttp(original))
+            } else {
+              reject(error)
+            }
+          })
+        })
+      }
+      ;(original as Record<string, unknown>)._retry = true
+      isRefreshing = true
+      try {
+        const newToken = await userStore.refresh()
+        processQueue(newToken)
+        original.headers.Authorization = `Bearer ${newToken}`
+        return aiHttp(original)
+      } catch (refreshErr) {
+        processQueue(null)
+        userStore.logout()
+        return Promise.reject(refreshErr)
+      } finally {
+        isRefreshing = false
+      }
+    }
+
     ElMessage.error(getErrorMessage(error))
     return Promise.reject(error)
   },

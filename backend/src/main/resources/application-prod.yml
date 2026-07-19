@@ -60,6 +60,9 @@ jwt:
   refresh-token-secret: ${JWT_REFRESH_SECRET}
   refresh-token-expiration: 604800000
 
+service:
+  token: ${SERVICE_TOKEN:}
+
 logging:
   level:
     com.ecommerce: INFO
