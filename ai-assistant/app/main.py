@@ -1,4 +1,4 @@
-"""FastAPI 应用入口。"""
+"""FastAPI 应用入口 — AI 助手侧不再直连 MySQL，通过 HTTP 调用 Java Backend 落库。"""
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
@@ -23,7 +23,7 @@ logger = structlog.get_logger(__name__)
 async def lifespan(app: FastAPI):
     setup_logging(settings.log_level)
 
-    # 注册内置工具（必须在服务启动前完成）
+    # 注册内置工具
     bootstrap_tools()
 
     logger.info(
@@ -33,6 +33,7 @@ async def lifespan(app: FastAPI):
         llm_model=settings.openai_model,
     )
     yield
+
     logger.info("ai-assistant shutting down")
 
 
@@ -65,3 +66,14 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=settings.app_port,
+        reload=settings.app_env != "prod",
+    )

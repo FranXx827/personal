@@ -1,4 +1,4 @@
-"""LangGraph 多 Agent 编排。"""
+"""LangGraph 多 Agent 编排 — 纯内存模式（历史由前端传，持久化由 Java Backend 负责）。"""
 from __future__ import annotations
 
 from functools import lru_cache
@@ -25,7 +25,6 @@ def build_graph() -> StateGraph:
 
     g.set_entry_point("supervisor")
 
-    # 无法归类的意图 (unknown) 默认交给 consult 处理
     g.add_conditional_edges(
         "supervisor",
         route_by_intent,
@@ -53,4 +52,9 @@ def build_graph() -> StateGraph:
 
 @lru_cache
 def get_compiled_graph():
+    """获取已编译的 LangGraph（纯内存，无外部 checkpointer）。
+
+    对话历史由前端传递 + Java Backend 持久化，
+    长期记忆由 app.memory.long_term 通过 Redis 单独管理（无需 RedisJSON）。
+    """
     return build_graph().compile()
