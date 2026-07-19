@@ -6,6 +6,7 @@ import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.DuplicateResourceException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.infra.security.JwtProvider;
+import com.ecommerce.infra.security.SecurityUser;
 import com.ecommerce.modules.auth.dto.*;
 import com.ecommerce.modules.auth.entity.User;
 import com.ecommerce.modules.auth.mapper.UserMapper;
@@ -14,6 +15,12 @@ import com.ecommerce.modules.merchant.entity.Merchant;
 import com.ecommerce.modules.merchant.mapper.MerchantMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,36 +34,43 @@ public class AuthServiceImpl implements AuthService {
     private final MerchantMapper merchantMapper;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Override
     public LoginResponse login(LoginRequest req) {
-        User user = userMapper.selectOne(
-                new LambdaQueryWrapper<User>().eq(User::getUsername, req.username())
-        );
-        if (user == null) {
-            throw new BusinessException(ResultCode.UNAUTHORIZED);
-        }
-        if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
-            throw new BusinessException(ResultCode.UNAUTHORIZED);
-        }
-        if (user.getStatus() != null && user.getStatus() == 1) {
+        // 凭证校验与账号状态判断统一交由 AuthenticationManager（DaoAuthenticationProvider
+        // + CustomUserDetailsService）处理，避免与 UserDetailsService 的逻辑重复。
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(req.username(), req.password())
+            );
+        } catch (DisabledException e) {
             throw new BusinessException(ResultCode.ACCOUNT_DISABLED);
+        } catch (BadCredentialsException e) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        } catch (AuthenticationException e) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
         }
+
+        SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
 
         // 登录只校验凭证（用户名+密码）。角色由用户记录决定，并通过 JWT 下发给前端，
         // 不应依赖客户端传入的 type 做身份校验——否则选错登录类型（默认 BUYER）会被误判为「未登录」。
         // 前端会根据 /auth/me 返回的角色自行路由到对应门户。
 
-        String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getUsername(), user.getRole());
-        String refreshToken = jwtProvider.generateRefreshToken(user.getId(), user.getUsername());
+        String accessToken = jwtProvider.generateAccessToken(
+                securityUser.getUserId(), securityUser.getUsername(), securityUser.getRole());
+        String refreshToken = jwtProvider.generateRefreshToken(
+                securityUser.getUserId(), securityUser.getUsername());
 
         return LoginResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .userId(user.getId())
-                .username(user.getUsername())
-                .nickname(user.getNickname())
-                .role(user.getRole())
+                .userId(securityUser.getUserId())
+                .username(securityUser.getUsername())
+                .nickname(securityUser.getNickname())
+                .role(securityUser.getRole())
                 .build();
     }
 

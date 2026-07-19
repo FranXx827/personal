@@ -7,6 +7,7 @@ import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.common.response.PageResult;
 import com.ecommerce.modules.merchant.entity.Merchant;
 import com.ecommerce.modules.merchant.mapper.MerchantMapper;
+import com.ecommerce.modules.product.client.AiAssistantClient;
 import com.ecommerce.modules.product.dto.*;
 import com.ecommerce.modules.product.entity.Product;
 import com.ecommerce.modules.product.entity.Sku;
@@ -28,6 +29,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final SkuMapper skuMapper;
     private final MerchantMapper merchantMapper;
+    private final AiAssistantClient aiAssistantClient;
 
     @Override
     public PageResult<ProductListVO> searchProducts(ProductPageRequest req) {
@@ -37,7 +39,9 @@ public class ProductServiceImpl implements ProductService {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
 
         if (StringUtils.isNotBlank(req.keyword())) {
-            wrapper.like(Product::getTitle, req.keyword());
+            wrapper.and(w -> w.like(Product::getTitle, req.keyword())
+                    .or().like(Product::getDescription, req.keyword())
+                    .or().like(Product::getSearchTags, req.keyword()));
         }
 
         // 分类过滤（包含子分类由调用层决定，这里只精确匹配）
@@ -93,12 +97,55 @@ public class ProductServiceImpl implements ProductService {
         product.setCategoryId(req.categoryId());
         product.setPrice(req.price());
         product.setMainImage(req.mainImage());
+
+        // searchTags 为空时调用 AI 自动生成
+        String tags = req.searchTags();
+        if (StringUtils.isBlank(tags)) {
+            // 优先调用 AI Assistant 生成标签
+            tags = aiAssistantClient.generateTags(req.title(), req.description());
+            // AI 失败时降级到规则引擎
+            if (StringUtils.isBlank(tags)) {
+                tags = autoGenerateTags(req.title(), req.description());
+            }
+        }
+        product.setSearchTags(tags);
+
         product.setSales(0);
         product.setRating(new java.math.BigDecimal("5.00"));
         product.setStatus(0); // 默认上架
 
         productMapper.insert(product);
         return product.getId();
+    }
+
+    /**
+     * 自动从标题和描述中提取搜索标签
+     */
+    private String autoGenerateTags(String title, String description) {
+        // 1. 从标题提取有意义的词（分词）——去掉品牌/型号后的核心词
+        // 2. 匹配预定义的通用标签映射
+        // 如果提取不到足够关键词，补充几个通用标签兜底
+        String text = (title + " " + (description != null ? description : "")).toLowerCase();
+
+        java.util.Set<String> tags = new java.util.LinkedHashSet<>();
+        String[] CATEGORY_TAGS = {"手机", "耳机", "手表", "电视", "电脑", "平板", "家电"};
+
+        // 检查标题和描述中是否包含预定义品类词
+        for (String cat : CATEGORY_TAGS) {
+            if (text.contains(cat)) {
+                tags.add(cat);
+            }
+        }
+
+        // 通用标签：电子产品、数码
+        tags.add("电子产品");
+
+        // 如果实在太少，补充默认标签
+        if (tags.size() <= 1) {
+            tags.add("数码");
+        }
+
+        return String.join(",", tags);
     }
 
     /**

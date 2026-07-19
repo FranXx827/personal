@@ -5,10 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,6 +31,7 @@ public class SecurityConfig {
             "/api/auth/register/**",
             "/api/auth/refresh",
             "/api/products/**",
+            "/api/chat/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/actuator/**",
@@ -47,6 +52,23 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * 基于数据库的认证管理器：手动构造 DaoAuthenticationProvider（不作为 Bean 暴露，
+     * 避免触发 Spring Security 关于「UserDetailsService 不会被自动用于表单登录」的 WARN），
+     * 并以 CustomUserDetailsService 作为凭证与账号状态的数据源。
+     * 由于上下文中已存在 UserDetailsService / AuthenticationManager Bean，
+     * UserDetailsServiceAutoConfiguration 会退出，不再生成随机会话密码。
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(provider);
     }
 
     @Bean

@@ -24,6 +24,9 @@ public record ProductCreateRequest(
         BigDecimal price,
 
         @Schema(description = "主图URL", example = "https://example.com/image.jpg")
-        String mainImage
+        String mainImage,
+
+        @Schema(description = "搜索标签，逗号分隔", example = "手机,5G,旗舰")
+        String searchTags
 ) {
 }

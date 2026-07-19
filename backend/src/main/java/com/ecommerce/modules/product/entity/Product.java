@@ -40,6 +40,9 @@ public class Product {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
+    /** 搜索标签，逗号分隔，如"手机,电子产品,5G" */
+    private String searchTags;
+
     /** 逻辑删除 0-未删 1-已删（数据库 NOT NULL DEFAULT 0） */
     @TableLogic
     private Integer deleted;

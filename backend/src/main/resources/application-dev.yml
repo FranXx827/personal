@@ -61,3 +61,8 @@ jwt:
 # Service-to-Service Token (AI Assistant → Backend)
 service:
   token: ai-service-shared-secret-key
+
+# AI Assistant 服务（Python FastAPI）配置
+ai-assistant:
+  base-url: http://localhost:8000
+  service-token: ai-service-shared-secret-key

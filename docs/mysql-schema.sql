@@ -67,6 +67,7 @@ CREATE TABLE `product` (
   `merchant_id`  BIGINT         NOT NULL,
   `title`        VARCHAR(255)   NOT NULL,
   `description`  TEXT,
+  `search_tags`  VARCHAR(512)  DEFAULT NULL COMMENT '搜索标签，逗号分隔，如"手机,电子产品,5G"',
   `category_id`  BIGINT         DEFAULT NULL COMMENT '分类ID',
   `price`        DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
   `main_image`   VARCHAR(512)   DEFAULT NULL COMMENT '主图URL',
@@ -239,15 +240,15 @@ INSERT INTO `merchant` (`id`, `user_id`, `name`, `description`, `contact_phone`,
 UPDATE `merchant` SET `reject_reason` = '营业执照已过期，请更新后重新提交审核' WHERE `id` = 190000000003;
 
 -- ======================== 商品测试数据 ========================
-INSERT INTO `product` (`id`, `merchant_id`, `title`, `description`, `category_id`, `price`, `main_image`, `sales`, `rating`, `status`) VALUES
-(200000000001, 190000000001, '华为 Mate 70 Pro 12GB+256GB 曜石黑', '麒麟9000S芯片，卫星通话，昆仑玻璃，HarmonyOS 4', 1, 6999.00, 'https://example.com/img/mate70pro.jpg', 12580, 4.85, 0),
-(200000000002, 190000000001, '华为 FreeBuds Pro 3 星闪连接耳机', '星闪连接技术，47dB智能动态降噪，30小时综合续航', 2, 1499.00, 'https://example.com/img/freebuds_pro3.jpg', 8920, 4.78, 0),
-(200000000003, 190000000002, '小米15 Ultra 徕卡影像旗舰', '徕卡一英寸大底，骁龙8 Gen3，双向卫星通信', 1, 5999.00, 'https://example.com/img/mi15ultra.jpg', 23450, 4.92, 0),
-(200000000004, 190000000002, '小米手环8 Pro 全面屏智能手环', '1.74英寸AMOLED大屏，血氧检测，150+运动模式', 3, 299.00, 'https://example.com/img/miband8pro.jpg', 45670, 4.65, 0),
-(200000000005, 190000000002, '小米电视 S Pro 75英寸 Mini LED', 'Mini LED背光，144Hz高刷，量子点广色域', 4, 6999.00, 'https://example.com/img/mitv_spro75.jpg', 3200, 4.80, 0),
-(200000000006, 190000000001, '华为 WATCH GT 4 智能手表', '41mm曜石黑，心率血氧监测，100+运动模式，14天续航', 3, 1488.00, 'https://example.com/img/watch_gt4.jpg', 5670, 4.72, 0),
-(200000000007, 190000000006, 'Nike Air Jordan 1 Retro High OG', '芝加哥配色，经典复古篮球鞋，头层牛皮材质', 5, 1599.00, 'https://example.com/img/aj1_chicago.jpg', 890, 4.95, 0),
-(200000000008, 190000000002, 'Redmi K70 Pro 第三代骁龙8', '第三代骁龙8处理器，2K中国屏，120W神仙秒充', 1, 3299.00, 'https://example.com/img/redmi_k70pro.jpg', 38920, 4.68, 0);
+INSERT INTO `product` (`id`, `merchant_id`, `title`, `description`, `search_tags`, `category_id`, `price`, `main_image`, `sales`, `rating`, `status`) VALUES
+(200000000001, 190000000001, '华为 Mate 70 Pro 手机 12GB+256GB 曜石黑', '麒麟9000S芯片，卫星通话，昆仑玻璃，HarmonyOS 4', '手机,华为,5G,旗舰,电子产品,数码,智能设备', 1, 6999.00, 'https://example.com/img/mate70pro.jpg', 12580, 4.85, 0),
+(200000000002, 190000000001, '华为 FreeBuds Pro 3 星闪连接耳机', '星闪连接技术，47dB智能动态降噪，30小时综合续航', '耳机,蓝牙,降噪,华为,音频,电子产品,数码,配件', 2, 1499.00, 'https://example.com/img/freebuds_pro3.jpg', 8920, 4.78, 0),
+(200000000003, 190000000002, '小米15 Ultra 手机 徕卡影像旗舰', '徕卡一英寸大底，骁龙8 Gen3，双向卫星通信', '手机,小米,徕卡,拍照,旗舰,电子产品,数码,智能设备', 1, 5999.00, 'https://example.com/img/mi15ultra.jpg', 23450, 4.92, 0),
+(200000000004, 190000000002, '小米手环8 Pro 全面屏智能手环', '1.74英寸AMOLED大屏，血氧检测，150+运动模式', '手环,智能穿戴,运动,小米,手表,健康,数码', 3, 299.00, 'https://example.com/img/miband8pro.jpg', 45670, 4.65, 0),
+(200000000005, 190000000002, '小米电视 S Pro 75英寸 Mini LED', 'Mini LED背光，144Hz高刷，量子点广色域', '电视,小米,Mini LED,4K,家用电器,智能家居,大家电', 4, 6999.00, 'https://example.com/img/mitv_spro75.jpg', 3200, 4.80, 0),
+(200000000006, 190000000001, '华为 WATCH GT 4 智能手表', '41mm曜石黑，心率血氧监测，100+运动模式，14天续航', '手表,智能穿戴,运动,华为,健康,数码,电子产品', 3, 1488.00, 'https://example.com/img/watch_gt4.jpg', 5670, 4.72, 0),
+(200000000007, 190000000006, 'Nike Air Jordan 1 Retro High OG', '芝加哥配色，经典复古篮球鞋，头层牛皮材质', '篮球鞋,运动鞋,Nike,乔丹,服饰,运动户外,潮鞋', 5, 1599.00, 'https://example.com/img/aj1_chicago.jpg', 890, 4.95, 0),
+(200000000008, 190000000002, 'Redmi K70 Pro 手机 第三代骁龙8', '第三代骁龙8处理器，2K中国屏，120W神仙秒充', '手机,Redmi,红米,性价比,游戏,电子产品,数码,智能设备', 1, 3299.00, 'https://example.com/img/redmi_k70pro.jpg', 38920, 4.68, 0);
 
 -- SKU 测试数据
 INSERT INTO `sku` (`id`, `product_id`, `specs`, `stock`, `price`, `version`) VALUES
