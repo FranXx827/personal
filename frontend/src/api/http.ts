@@ -29,6 +29,7 @@ export const http: AxiosInstance = axios.create({
 export const aiHttp: AxiosInstance = axios.create({
   baseURL: AI_BASE_URL,
   timeout: 60000, // AI 请求更长
+  adapter: 'fetch', // 使用 fetch adapter 以支持 responseType: 'stream'（XHR 不支持 stream）
 })
 
 let isRefreshing = false
