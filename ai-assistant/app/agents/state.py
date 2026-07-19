@@ -6,7 +6,7 @@ from typing import Annotated, Any, Literal, TypedDict
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-IntentType = Literal["consult", "cart", "after_sale", "chat", "unknown"]
+IntentType = Literal["consult", "cart", "after_sale", "unknown"]
 
 
 class AgentState(TypedDict, total=False):

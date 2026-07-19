@@ -14,7 +14,6 @@ _INTENT_MAP: dict[str, IntentType] = {
     "加入购物车": "cart",
     "after_sale": "after_sale",
     "售后": "after_sale",
-    "chat": "chat",
 }
 
 
@@ -25,7 +24,7 @@ async def supervisor_node(state: AgentState) -> AgentState:
 
     last_user_msg = next((m.content for m in reversed(messages) if m.type == "human"), "")
     if not last_user_msg:
-        return {**state, "intent": "chat"}
+        return {**state, "intent": "unknown"}
 
     llm = get_llm(temperature=0)
     intent = await llm.ainvoke(
@@ -36,4 +35,4 @@ async def supervisor_node(state: AgentState) -> AgentState:
 
 def route_by_intent(state: AgentState) -> str:
     intent = state.get("intent", "unknown")
-    return intent if intent in {"consult", "cart", "after_sale", "chat"} else "unknown"
+    return intent if intent in {"consult", "cart", "after_sale"} else "unknown"

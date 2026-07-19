@@ -7,7 +7,6 @@ from langgraph.graph import END, StateGraph
 
 from app.agents.nodes.after_sale import after_sale_node
 from app.agents.nodes.cart import cart_node
-from app.agents.nodes.chat import chat_node
 from app.agents.nodes.consult import consult_node
 from app.agents.nodes.reflect import degrade_node, reflect_node, route_after_reflect
 from app.agents.state import AgentState
@@ -21,12 +20,12 @@ def build_graph() -> StateGraph:
     g.add_node("consult", consult_node)
     g.add_node("cart", cart_node)
     g.add_node("after_sale", after_sale_node)
-    g.add_node("chat", chat_node)
     g.add_node("reflect", reflect_node)
     g.add_node("degrade", degrade_node)
 
     g.set_entry_point("supervisor")
 
+    # 无法归类的意图 (unknown) 默认交给 consult 处理
     g.add_conditional_edges(
         "supervisor",
         route_by_intent,
@@ -34,15 +33,13 @@ def build_graph() -> StateGraph:
             "consult": "consult",
             "cart": "cart",
             "after_sale": "after_sale",
-            "chat": "chat",
-            "unknown": "chat",
+            "unknown": "consult",
         },
     )
 
     g.add_edge("consult", "reflect")
     g.add_edge("cart", "reflect")
     g.add_edge("after_sale", "reflect")
-    g.add_edge("chat", "reflect")
 
     g.add_conditional_edges(
         "reflect",
