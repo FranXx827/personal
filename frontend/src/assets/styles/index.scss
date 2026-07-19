@@ -1,0 +1,346 @@
+/* 全局基础样式 */
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color var(--duration-normal) var(--ease-out-quart),
+    color var(--duration-normal) var(--ease-out-quart);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+  margin: 0;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out-quart);
+
+  &:hover {
+    color: var(--color-primary-hover);
+  }
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* 选中文本 */
+::selection {
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+
+/* nprogress 主题定制 */
+#nprogress .bar {
+  background: var(--color-primary) !important;
+  height: 2px !important;
+}
+
+/* ============================ */
+/* Element Plus 主题覆盖 — 平滑化 */
+/* ============================ */
+:root {
+  /* 品牌色映射 */
+  --el-color-primary: var(--color-primary);
+  --el-color-primary-light-3: #9a90f3;
+  --el-color-primary-light-5: #bbb5f7;
+  --el-color-primary-light-7: #d9d6fb;
+  --el-color-primary-light-8: #eae7fd;
+  --el-color-primary-light-9: var(--color-primary-subtle);
+  --el-color-primary-dark-2: var(--color-primary-hover);
+
+  --el-color-success: var(--color-success);
+  --el-color-warning: var(--color-warning);
+  --el-color-danger: var(--color-danger);
+  --el-color-info: var(--color-info);
+
+  /* 圆角 — 全部平滑化 */
+  --el-border-radius-base: var(--radius-sm);
+  --el-border-radius-small: var(--radius-xs);
+  --el-border-radius-round: var(--radius-full);
+  --el-border-radius-circle: 50%;
+
+  /* 字体 */
+  --el-font-size-base: var(--text-base);
+  --el-font-size-small: var(--text-sm);
+  --el-font-size-large: var(--text-lg);
+  --el-font-family: var(--font-body);
+
+  /* 阴影 */
+  --el-box-shadow: var(--shadow-sm);
+  --el-box-shadow-light: var(--shadow-xs);
+  --el-box-shadow-lighter: var(--shadow-xs);
+  --el-box-shadow-dark: var(--shadow-md);
+
+  /* 过渡 */
+  --el-transition-duration: var(--duration-fast);
+  --el-transition-function-ease-in-out-bezier: var(--ease-out-quart);
+}
+
+/* 按钮平滑化 */
+.el-button {
+  --el-button-border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 550;
+  letter-spacing: 0.01em;
+
+  &.is-round {
+    border-radius: var(--radius-full);
+  }
+}
+
+.el-button--primary {
+  --el-button-hover-bg-color: var(--color-primary-hover);
+}
+
+/* 输入框平滑化 */
+.el-input {
+  --el-input-border-radius: var(--radius-sm);
+  --el-input-focus-border: var(--color-primary);
+  --el-input-focus-shadow: 0 0 0 3px var(--color-primary-ghost);
+}
+
+.el-input__wrapper {
+  box-shadow: inset 0 0 0 1px var(--border-color) !important;
+  border-radius: var(--radius-sm) !important;
+  transition: box-shadow var(--duration-fast) var(--ease-out-quart) !important;
+
+  &.is-focus {
+    box-shadow: inset 0 0 0 1px var(--color-primary), 0 0 0 3px var(--color-primary-ghost) !important;
+  }
+}
+
+/* 标签页平滑化 */
+.el-tabs {
+  --el-tabs-header-height: 44px;
+}
+
+.el-tabs__item {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  transition: color var(--duration-fast) var(--ease-out-quart);
+
+  &:hover {
+    color: var(--color-primary);
+  }
+
+  &.is-active {
+    font-weight: 600;
+  }
+}
+
+.el-tabs__active-bar {
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-primary);
+}
+
+/* 表格平滑化 */
+.el-table {
+  --el-table-border-color: var(--border-subtle);
+  --el-table-header-bg-color: var(--bg-message);
+  --el-table-tr-bg-color: transparent;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+
+  th.el-table__cell {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    background: var(--bg-message);
+  }
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  .el-table__border-left-patch {
+    display: none;
+  }
+}
+
+/* 对话框平滑化 */
+.el-dialog {
+  --el-dialog-border-radius: var(--radius-lg);
+}
+
+.el-message-box {
+  --el-messagebox-border-radius: var(--radius-lg);
+}
+
+/* 标签 */
+.el-tag {
+  --el-tag-border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+/* 下拉菜单 */
+.el-dropdown-menu {
+  --el-dropdown-menuItem-hover-fill: var(--color-primary-ghost);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: var(--space-2);
+  box-shadow: var(--shadow-md);
+
+  .el-dropdown-menu__item {
+    border-radius: var(--radius-xs);
+    font-size: var(--text-sm);
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+/* 骨架屏 */
+.el-skeleton {
+  --el-skeleton-color: var(--bg-skeleton);
+  --el-skeleton-to-color: var(--bg-message);
+}
+
+/* 空状态 */
+.el-empty {
+  --el-empty-fill-color-0: var(--border-subtle);
+  --el-empty-fill-color-1: var(--bg-message);
+  --el-empty-fill-color-2: var(--border-color);
+  --el-empty-fill-color-3: var(--bg-message);
+  --el-empty-fill-color-4: var(--border-color);
+  --el-empty-fill-color-5: var(--border-subtle);
+  --el-empty-fill-color-6: var(--border-color);
+  --el-empty-fill-color-7: var(--border-subtle);
+  --el-empty-fill-color-8: var(--border-color);
+  --el-empty-fill-color-9: var(--bg-skeleton);
+}
+
+/* 单选框按钮组平滑化 */
+.el-radio-button {
+  --el-radio-button-checked-bg-color: var(--color-primary);
+  --el-radio-button-checked-text-color: #fff;
+  --el-radio-button-checked-border-color: var(--color-primary);
+}
+
+.el-radio-button__inner {
+  border-radius: 0;
+  padding: 8px 18px;
+  font-weight: 500;
+  font-size: var(--text-sm);
+  transition: all var(--duration-fast) var(--ease-out-quart);
+}
+
+.el-radio-group .el-radio-button:first-of-type .el-radio-button__inner {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.el-radio-group .el-radio-button:last-of-type .el-radio-button__inner {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* 深色主题适配 Element Plus */
+[data-theme='dark'] {
+  --el-bg-color: var(--bg-card);
+  --el-bg-color-page: var(--bg-page);
+  --el-bg-color-overlay: var(--bg-elevated);
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-placeholder);
+  --el-border-color: var(--border-color);
+  --el-border-color-light: var(--border-color);
+  --el-border-color-lighter: var(--border-subtle);
+  --el-border-color-extra-light: var(--border-subtle);
+  --el-fill-color: var(--bg-message);
+  --el-fill-color-light: var(--bg-message);
+  --el-fill-color-lighter: var(--bg-skeleton);
+  --el-fill-color-blank: var(--bg-card);
+}
+
+[data-theme='light'] {
+  --el-bg-color: var(--bg-card);
+  --el-bg-color-page: var(--bg-page);
+  --el-fill-color: #f5f4f1;
+  --el-fill-color-light: #f0efec;
+  --el-fill-color-lighter: #eae8e4;
+}
+
+/* ============================ */
+/* 滚动条                        */
+/* ============================ */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+  transition: background var(--duration-fast) var(--ease-out-quart);
+
+  &:hover {
+    background: var(--text-tertiary);
+  }
+}
+
+/* ============================ */
+/* 通用布局工具类                   */
+/* ============================ */
+.page {
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+.page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+
+  @media (min-width: 768px) {
+    padding: var(--space-8) var(--space-6);
+  }
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 650;
+  margin: 0 0 var(--space-6);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+/* 渐变文本 — 极克制使用 */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
