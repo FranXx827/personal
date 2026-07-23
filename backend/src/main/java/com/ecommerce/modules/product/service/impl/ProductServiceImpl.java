@@ -41,9 +41,16 @@ public class ProductServiceImpl implements ProductService {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
 
         if (StringUtils.isNotBlank(req.keyword())) {
-            wrapper.and(w -> w.like(Product::getTitle, req.keyword())
-                    .or().like(Product::getDescription, req.keyword())
-                    .or().like(Product::getSearchTags, req.keyword()));
+            String kw = req.keyword().trim();
+            if (kw.length() == 1) {
+                // 单字符：ngram_token_size=2 无法匹配，降级为 LIKE 兜底
+                wrapper.and(w -> w.like(Product::getTitle, kw)
+                        .or().like(Product::getDescription, kw)
+                        .or().like(Product::getSearchTags, kw));
+            } else {
+                // 多字符：走倒排索引（MATCH...AGAINST），利用 FULLTEXT + ngram 分词
+                wrapper.apply("MATCH (title, description, search_tags) AGAINST ({0} IN BOOLEAN MODE)", kw);
+            }
         }
 
         // 分类过滤（精确匹配单个分类ID）

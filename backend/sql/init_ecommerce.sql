@@ -107,7 +107,10 @@ CREATE TABLE `product` (
   -- 销量排序索引
   KEY `idx_sales` (`sales`),
   -- 评分排序索引
-  KEY `idx_rating` (`rating`)
+  KEY `idx_rating` (`rating`),
+  -- 倒排索引：基于 ngram 分词，替代 LIKE 模糊查询
+  -- 覆盖 title / description / search_tags，支持中文分词
+  FULLTEXT INDEX `ft_product_search` (`title`, `description`, `search_tags`) WITH PARSER ngram
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品';
 
 -- ============================================================
