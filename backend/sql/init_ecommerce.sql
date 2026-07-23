@@ -17,6 +17,7 @@ DROP TABLE IF EXISTS `cart_item`;
 DROP TABLE IF EXISTS `seckill_goods`;
 DROP TABLE IF EXISTS `sku`;
 DROP TABLE IF EXISTS `product`;
+DROP TABLE IF EXISTS `category`;
 DROP TABLE IF EXISTS `merchant`;
 DROP TABLE IF EXISTS `order`;
 DROP TABLE IF EXISTS `user`;
@@ -60,13 +61,33 @@ CREATE TABLE `merchant` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商户/店铺';
 
 -- ============================================================
--- 3. 商品表（含复合索引优化商品搜索）
+-- 3. 分类表（树形结构，支持多级分类）
+-- ============================================================
+DROP TABLE IF EXISTS `category`;
+CREATE TABLE `category` (
+  `id`         BIGINT         NOT NULL COMMENT '分类ID',
+  `name`       VARCHAR(64)    NOT NULL COMMENT '分类名称',
+  `parent_id`  BIGINT         DEFAULT NULL COMMENT '父分类ID，顶级为NULL',
+  `level`      INT            NOT NULL DEFAULT 1 COMMENT '层级：1-顶级 2-二级 3-三级',
+  `sort_order` INT            NOT NULL DEFAULT 0 COMMENT '排序号（同级排序）',
+  `created_at` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted`    TINYINT(1)     NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_parent_id` (`parent_id`),
+  KEY `idx_name` (`name`),
+  KEY `idx_level` (`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分类';
+
+-- ============================================================
+-- 4. 商品表（含复合索引优化商品搜索）
 -- ============================================================
 CREATE TABLE `product` (
   `id`           BIGINT         NOT NULL,
   `merchant_id`  BIGINT         NOT NULL,
   `title`        VARCHAR(255)   NOT NULL,
   `description`  TEXT,
+  `search_tags`  VARCHAR(512)   DEFAULT NULL COMMENT '搜索标签，逗号分隔，如"手机,电子产品,5G"',
   `category_id`  BIGINT         DEFAULT NULL COMMENT '分类ID',
   `price`        DECIMAL(12,2)  NOT NULL DEFAULT 0.00,
   `main_image`   VARCHAR(512)   DEFAULT NULL COMMENT '主图URL',
@@ -90,7 +111,7 @@ CREATE TABLE `product` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品';
 
 -- ============================================================
--- 4. SKU 表（库存扣减核心表 - 唯一索引防超卖）
+-- 5. SKU 表（库存扣减核心表 - 唯一索引防超卖）
 -- ============================================================
 CREATE TABLE `sku` (
   `id`         BIGINT         NOT NULL,
@@ -107,7 +128,7 @@ CREATE TABLE `sku` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品SKU';
 
 -- ============================================================
--- 5. 购物车表
+-- 6. 购物车表
 -- ============================================================
 CREATE TABLE `cart_item` (
   `id`         BIGINT      NOT NULL,
@@ -126,7 +147,7 @@ CREATE TABLE `cart_item` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='购物车项';
 
 -- ============================================================
--- 6. 订单主表（order 为 MySQL 保留字，必须反引号包裹）
+-- 7. 订单主表（order 为 MySQL 保留字，必须反引号包裹）
 -- ============================================================
 CREATE TABLE `order` (
   `id`               BIGINT        NOT NULL,
@@ -155,7 +176,7 @@ CREATE TABLE `order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单主表';
 
 -- ============================================================
--- 7. 订单明细表
+-- 8. 订单明细表
 -- ============================================================
 CREATE TABLE `order_item` (
   `id`             BIGINT         NOT NULL,
@@ -175,7 +196,7 @@ CREATE TABLE `order_item` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单明细';
 
 -- ============================================================
--- 8. 支付表
+-- 9. 支付表
 -- ============================================================
 CREATE TABLE `payment` (
   `id`             BIGINT         NOT NULL,
@@ -195,7 +216,7 @@ CREATE TABLE `payment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付记录';
 
 -- ============================================================
--- 9. 秒杀商品表
+-- 10. 秒杀商品表
 -- ============================================================
 CREATE TABLE `seckill_goods` (
   `id`            BIGINT        NOT NULL,
@@ -237,6 +258,35 @@ INSERT INTO `merchant` (`id`, `user_id`, `name`, `description`, `contact_phone`,
 (190000000004, 180000000007, '苹果专营店', 'Apple授权经销商，iPhone/Mac/iPad全系现货', '0755-99998888', 'apple@shop.com', 'PENDING');
 
 UPDATE `merchant` SET `reject_reason` = '营业执照已过期，请更新后重新提交审核' WHERE `id` = 190000000003;
+
+-- ======================== 分类测试数据（树形结构） ========================
+INSERT INTO `category` (`id`, `name`, `parent_id`, `level`, `sort_order`) VALUES
+-- 顶级分类
+(1,  '手机',     NULL, 1, 1),
+(2,  '耳机',     NULL, 1, 2),
+(3,  '穿戴',     NULL, 1, 3),
+(4,  '电视',     NULL, 1, 4),
+(5,  '鞋服',     NULL, 1, 5),
+-- 手机子分类 (parent_id=1)
+(6,  '智能手机',  1, 2, 1),
+(7,  '功能手机',  1, 2, 2),
+(8,  '手机配件',  1, 2, 3),
+-- 手机配件的子分类 (parent_id=8)
+(9,  '手机壳',    8, 3, 1),
+(10, '充电器',    8, 3, 2),
+(11, '数据线',    8, 3, 3),
+-- 耳机子分类 (parent_id=2)
+(12, '有线耳机',  2, 2, 1),
+(13, '无线耳机',  2, 2, 2),
+(14, '降噪耳机',  2, 2, 3),
+-- 穿戴子分类 (parent_id=3)
+(15, '智能手表',  3, 2, 1),
+(16, '智能手环',  3, 2, 2),
+-- 电视子分类 (parent_id=4)
+(17, '智能电视',  4, 2, 1),
+-- 鞋服子分类 (parent_id=5)
+(18, '运动鞋',    5, 2, 1),
+(19, '运动服',    5, 2, 2);
 
 -- ======================== 商品测试数据 ========================
 INSERT INTO `product` (`id`, `merchant_id`, `title`, `description`, `category_id`, `price`, `main_image`, `sales`, `rating`, `status`) VALUES

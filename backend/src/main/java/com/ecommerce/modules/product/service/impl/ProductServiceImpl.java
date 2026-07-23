@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.common.response.PageResult;
+import com.ecommerce.modules.category.service.CategoryService;
 import com.ecommerce.modules.merchant.entity.Merchant;
 import com.ecommerce.modules.merchant.mapper.MerchantMapper;
 import com.ecommerce.modules.product.client.AiAssistantClient;
@@ -30,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
     private final SkuMapper skuMapper;
     private final MerchantMapper merchantMapper;
     private final AiAssistantClient aiAssistantClient;
+    private final CategoryService categoryService;
 
     @Override
     public PageResult<ProductListVO> searchProducts(ProductPageRequest req) {
@@ -44,9 +46,21 @@ public class ProductServiceImpl implements ProductService {
                     .or().like(Product::getSearchTags, req.keyword()));
         }
 
-        // 分类过滤（包含子分类由调用层决定，这里只精确匹配）
+        // 分类过滤（精确匹配单个分类ID）
         if (req.categoryId() != null) {
             wrapper.eq(Product::getCategoryId, req.categoryId());
+        }
+
+        // 分类过滤（名称 → 后端映射为多 ID，IN 查询）
+        // LLM 只传品类名称，由 CategoryService 负责解析为 ID 列表
+        if (StringUtils.isNotBlank(req.categoryName())) {
+            List<Long> ids = categoryService.resolve(req.categoryName());
+            if (!ids.isEmpty()) {
+                wrapper.in(Product::getCategoryId, ids);
+            } else {
+                // 找不到该分类时，返回空结果
+                wrapper.eq(Product::getId, 0); // 恒假条件
+            }
         }
 
         // 仅查询上架商品（status = 0）
